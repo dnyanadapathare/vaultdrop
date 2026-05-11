@@ -1,0 +1,14 @@
+{
+  "name": "vaultdrop",
+  "version": "1.0.0",
+  "description": "Local content-to-Obsidian pipeline",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && node index.js",
+    "client": "cd client && npm run dev"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.0",
+    "dotenv": "^16.0.0"
+  }
+}

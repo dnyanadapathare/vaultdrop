@@ -51,7 +51,10 @@ async function saveToVault(data) {
   }
 
   const markdown = buildMarkdown(data);
-  const filename = `${slugify(data.title)}-${Date.now()}.md`;
+  const base = slugify(data.title);
+const filename = fs.existsSync(path.join(vaultPath, `${base}.md`)) 
+  ? `${base}-${new Date().toISOString().split('T')[0]}.md` 
+  : `${base}.md`;
   const filepath = path.join(vaultPath, filename);
 
   try {

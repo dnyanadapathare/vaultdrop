@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import './App.css'
 
 const SERVER = 'http://localhost:3001'
@@ -12,12 +13,12 @@ const STATES = {
   NEEDS_MANUAL: 'needs_manual'
 }
 
-const STATUS_MESSAGES = {
-  extracting: 'Pulling content...',
-  summarising: 'Asking Groq to think...',
-  done: 'Your note is ready',
-  error: 'Something went wrong',
-  needs_manual: 'Extraction failed — paste content below'
+const PLATFORM_ICONS = {
+  youtube: '▶',
+  instagram: '◈',
+  substack: '✦',
+  reddit: '◉',
+  article: '◎'
 }
 
 export default function App() {
@@ -26,6 +27,9 @@ export default function App() {
   const [status, setStatus] = useState(STATES.IDLE)
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
+  const [copied, setCopied] = useState(false)
+
+  const isProcessing = status === STATES.EXTRACTING || status === STATES.SUMMARISING
 
   async function handleProcess(e) {
     e?.preventDefault()
@@ -36,8 +40,7 @@ export default function App() {
     setError('')
 
     try {
-      // short delay so user sees extracting state
-      await new Promise(r => setTimeout(r, 400))
+      await new Promise(r => setTimeout(r, 500))
       setStatus(STATES.SUMMARISING)
 
       const res = await fetch(`${SERVER}/api/process`, {
@@ -56,15 +59,15 @@ export default function App() {
 
       if (!res.ok) {
         setStatus(STATES.ERROR)
-        setError(data.error || 'Unknown error')
+        setError(data.error || 'Something went wrong')
         return
       }
 
       setResult(data)
       setStatus(STATES.DONE)
-    } catch (err) {
+    } catch {
       setStatus(STATES.ERROR)
-      setError('Could not reach the Vaultdrop server. Is it running?')
+      setError('Cannot reach Vaultdrop server. Is it running?')
     }
   }
 
@@ -77,6 +80,12 @@ export default function App() {
     a.click()
   }
 
+  async function handleCopy() {
+    await navigator.clipboard.writeText(result.markdown)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   function handleReset() {
     setUrl('')
     setManualText('')
@@ -85,110 +94,167 @@ export default function App() {
     setError('')
   }
 
+  const platform = result?.structured ? detectPlatform(url) : null
+
   return (
     <div className="app">
-      <header className="header">
-        <div className="logo">
-          <span className="logo-hex">⬡</span>
-          <span className="logo-text">vaultdrop</span>
-        </div>
-        <span className="logo-sub">content → obsidian</span>
-      </header>
-
-      <main className="main">
-        {/* URL INPUT */}
-        <form className="input-row" onSubmit={handleProcess}>
-          <input
-            className="url-input"
-            type="url"
-            placeholder="paste a YouTube, Instagram, Substack or Reddit URL..."
-            value={url}
-            onChange={e => setUrl(e.target.value)}
-            disabled={status === STATES.EXTRACTING || status === STATES.SUMMARISING}
-          />
-          <button
-            className="submit-btn"
-            type="submit"
-            disabled={!url.trim() || status === STATES.EXTRACTING || status === STATES.SUMMARISING}
-          >
-            {status === STATES.EXTRACTING || status === STATES.SUMMARISING ? '...' : '→'}
-          </button>
-        </form>
-
-        {/* STATUS BAR */}
-        {status !== STATES.IDLE && (
-          <div className={`status-bar status-${status}`}>
-            {status === STATES.EXTRACTING || status === STATES.SUMMARISING ? (
-              <span className="status-loading">
-                <span className="dot-pulse" />
-                {STATUS_MESSAGES[status]}
-              </span>
-            ) : (
-              <span>{STATUS_MESSAGES[status] || error}</span>
-            )}
+      <aside className="sidebar">
+        <div className="sidebar-top">
+          <div className="wordmark">
+            <span className="wordmark-icon">⬡</span>
+            <span className="wordmark-name">vaultdrop</span>
           </div>
-        )}
+          <p className="wordmark-sub">content → obsidian</p>
+        </div>
 
-        {/* MANUAL PASTE FALLBACK */}
-        {status === STATES.NEEDS_MANUAL && (
-          <div className="manual-section">
-            <p className="manual-hint">{error} Paste the content below and try again.</p>
-            <textarea
-              className="manual-input"
-              placeholder="Paste the article text, transcript, or content here..."
-              value={manualText}
-              onChange={e => setManualText(e.target.value)}
-              rows={8}
+        <div className="sidebar-body">
+          <form onSubmit={handleProcess} className="input-group">
+            <label className="input-label">URL</label>
+            <input
+              className="url-input"
+              type="url"
+              placeholder="paste any link..."
+              value={url}
+              onChange={e => setUrl(e.target.value)}
+              disabled={isProcessing}
             />
+
+            {status === STATES.NEEDS_MANUAL && (
+              <div className="manual-group">
+                <label className="input-label">paste content manually</label>
+                <textarea
+                  className="manual-input"
+                  placeholder="paste transcript, article text, or any content..."
+                  value={manualText}
+                  onChange={e => setManualText(e.target.value)}
+                  rows={6}
+                />
+              </div>
+            )}
+
             <button
-              className="retry-btn"
-              onClick={handleProcess}
-              disabled={!manualText.trim()}
+              className="process-btn"
+              type="submit"
+              disabled={!url.trim() || isProcessing}
             >
-              Process manual text →
+              {isProcessing ? (
+                <span className="btn-loading">
+                  <span className="spinner" />
+                  {status === STATES.EXTRACTING ? 'extracting...' : 'thinking...'}
+                </span>
+              ) : (
+                status === STATES.NEEDS_MANUAL ? 'process manually →' : 'vaultdrop →'
+              )}
+            </button>
+          </form>
+
+          {status === STATES.DONE && result && (
+            <div className="meta-panel">
+              <div className="meta-row">
+                <span className="meta-label">platform</span>
+                <span className="meta-value">
+                  {PLATFORM_ICONS[platform] || '◎'} {platform}
+                </span>
+              </div>
+              <div className="meta-row">
+                <span className="meta-label">tags</span>
+                <div className="tags">
+                  {result.structured?.tags?.map(t => (
+                    <span key={t} className="tag">{t}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="meta-row">
+                <span className="meta-label">vault</span>
+                <span className={`vault-status ${result.savedToVault ? 'ok' : 'miss'}`}>
+                  {result.savedToVault ? '✓ saved' : '⚠ download below'}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {status === STATES.ERROR && (
+            <div className="error-panel">
+              <p>{error}</p>
+            </div>
+          )}
+        </div>
+
+        {status === STATES.DONE && result && (
+          <div className="sidebar-actions">
+            <button className="action-btn primary" onClick={handleDownload}>
+              ↓ download .md
+            </button>
+            <button className="action-btn secondary" onClick={handleCopy}>
+              {copied ? '✓ copied' : 'copy markdown'}
+            </button>
+            <button className="action-btn ghost" onClick={handleReset}>
+              + new note
             </button>
           </div>
         )}
 
-        {/* ERROR STATE */}
         {status === STATES.ERROR && (
-          <div className="error-section">
-            <p className="error-msg">{error}</p>
-            <button className="reset-btn" onClick={handleReset}>Try again</button>
+          <div className="sidebar-actions">
+            <button className="action-btn ghost" onClick={handleReset}>try again</button>
+          </div>
+        )}
+      </aside>
+
+      <main className="preview-pane">
+        {status === STATES.IDLE && (
+          <div className="empty-state">
+            <div className="empty-icon">⬡</div>
+            <p className="empty-title">drop a link, get a note</p>
+            <p className="empty-sub">YouTube · Instagram · Substack · Reddit · any article</p>
           </div>
         )}
 
-        {/* RESULT PREVIEW */}
+        {isProcessing && (
+          <div className="processing-state">
+            <div className="processing-orb" />
+            <p className="processing-title">
+              {status === STATES.EXTRACTING ? 'extracting content' : 'summarising with groq'}
+            </p>
+            <p className="processing-sub">
+              {status === STATES.EXTRACTING ? 'pulling content from the source...' : 'structuring your note...'}
+            </p>
+          </div>
+        )}
+
+        {status === STATES.NEEDS_MANUAL && (
+          <div className="empty-state">
+            <div className="empty-icon warn">⚠</div>
+            <p className="empty-title">extraction failed</p>
+            <p className="empty-sub">paste the content manually in the sidebar</p>
+          </div>
+        )}
+
         {status === STATES.DONE && result && (
-          <div className="result-section">
-            <div className="result-meta">
-              <span className="platform-badge">{result.structured?.tags?.join(' · ')}</span>
-              {result.savedToVault ? (
-                <span className="vault-badge vault-ok">✓ saved to vault</span>
-              ) : (
-                <span className="vault-badge vault-miss">vault not configured — download below</span>
-              )}
+          <div className="markdown-view">
+            <div className="markdown-header">
+              <h1 className="note-title">{result.structured?.title}</h1>
+              <div className="note-meta">
+                <span>{new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                <span className="dot">·</span>
+                <span className="note-url">{url}</span>
+              </div>
             </div>
-
-            <pre className="markdown-preview">{result.markdown}</pre>
-
-            <div className="actions">
-              <button className="action-btn primary" onClick={handleDownload}>
-                ↓ download .md
-              </button>
-              <button
-                className="action-btn secondary"
-                onClick={() => navigator.clipboard.writeText(result.markdown)}
-              >
-                copy markdown
-              </button>
-              <button className="action-btn ghost" onClick={handleReset}>
-                + new note
-              </button>
+            <div className="markdown-body">
+              <ReactMarkdown>{result.markdown}</ReactMarkdown>
             </div>
           </div>
         )}
       </main>
     </div>
   )
+}
+
+function detectPlatform(url) {
+  if (!url) return 'article'
+  if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube'
+  if (url.includes('instagram.com')) return 'instagram'
+  if (url.includes('substack.com') || url.includes('/p/')) return 'substack'
+  if (url.includes('reddit.com')) return 'reddit'
+  return 'article'
 }

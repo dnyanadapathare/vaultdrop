@@ -525,6 +525,6 @@ body {
 .markdown-body a:hover { text-decoration: underline; }
 
 /* hide frontmatter from rendered view */
-.markdown-body p:first-child {
+.markdown-body > p:first-of-type {
   display: none;
 }

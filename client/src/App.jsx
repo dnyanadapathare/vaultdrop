@@ -241,13 +241,18 @@ export default function App() {
               </div>
             </div>
             <div className="markdown-body">
-              <ReactMarkdown>{result.markdown}</ReactMarkdown>
+              <ReactMarkdown>{stripFrontmatter(result.markdown)}</ReactMarkdown>
             </div>
           </div>
         )}
       </main>
     </div>
   )
+}
+
+function stripFrontmatter(markdown) {
+  if (!markdown) return ''
+  return markdown.replace(/^---[\s\S]*?---\n?/, '').trim()
 }
 
 function detectPlatform(url) {

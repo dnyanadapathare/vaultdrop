@@ -25,7 +25,7 @@ function detectPlatform(url) {
 
 // main extraction + summarisation route
 app.post('/api/process', async (req, res) => {
-  const { url, manualText } = req.body;
+  const { url, manualText, mode } = req.body;
 
   if (!url) {
     return res.status(400).json({ error: 'URL is required' });
@@ -87,7 +87,11 @@ app.post('/api/process', async (req, res) => {
 
   // SUMMARISE with Groq
   console.log('[vaultdrop] sending to Groq...');
-  const structured = await summarise({ title, text: extractedText, platform, url });
+  // auto-detect mode based on platform, respect manual override
+const autoMode = (platform === 'substack' || platform === 'article') ? 'full' : 'summarise';
+const captureMode = mode || autoMode;
+console.log(`[vaultdrop] capture mode: ${captureMode}`);
+const structured = await summarise({ title, text: extractedText, platform, url, mode: captureMode });
 
   if (!structured) {
     return res.status(500).json({ error: 'Groq summarisation failed. Try again.' });

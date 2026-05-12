@@ -28,6 +28,7 @@ export default function App() {
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
+  const [mode, setMode] = useState(null) // null = auto-detect
 
   const isProcessing = status === STATES.EXTRACTING || status === STATES.SUMMARISING
 
@@ -46,7 +47,7 @@ export default function App() {
       const res = await fetch(`${SERVER}/api/process`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: url.trim(), manualText: manualText.trim() })
+        body: JSON.stringify({ url: url.trim(), manualText: manualText.trim(), mode })
       })
 
       const data = await res.json()
@@ -109,6 +110,23 @@ export default function App() {
 
         <div className="sidebar-body">
           <form onSubmit={handleProcess} className="input-group">
+            <div className="mode-toggle">
+              <button
+                type="button"
+                className={`mode-btn ${mode === null ? 'active' : ''}`}
+                onClick={() => setMode(null)}
+              >auto</button>
+              <button
+                type="button"
+                className={`mode-btn ${mode === 'summarise' ? 'active' : ''}`}
+                onClick={() => setMode('summarise')}
+              >summarise</button>
+              <button
+                type="button"
+                className={`mode-btn ${mode === 'full' ? 'active' : ''}`}
+                onClick={() => setMode('full')}
+              >full capture</button>
+            </div>
             <label className="input-label">URL</label>
             <input
               className="url-input"

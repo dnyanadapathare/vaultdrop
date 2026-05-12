@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Local content-to-Obsidian pipeline",
   "scripts": {
+    "setup": "node scripts/setup.js",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && node index.js",
     "client": "cd client && npm run dev"

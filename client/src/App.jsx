@@ -174,6 +174,12 @@ export default function App() {
                   {PLATFORM_ICONS[platform] || '◎'} {platform}
                 </span>
               </div>
+              {result.structured?.category && (
+  <div className="meta-row">
+    <span className="meta-label">category</span>
+    <span className="meta-value">⬡ {result.structured.category}</span>
+  </div>
+)}
               <div className="meta-row">
                 <span className="meta-label">tags</span>
                 <div className="tags">

@@ -1,93 +1,150 @@
-# ⬡ vaultdrop
-
-> Paste any URL. Get a structured markdown note in your Obsidian vault.
-
-![Vaultdrop UI](screenshot.png)
-
-Vaultdrop is a local-first content-to-knowledge pipeline for Obsidian users. Paste a YouTube, Instagram, Substack, or Reddit URL — it extracts the content, transcribes audio if needed, summarises it with AI, and saves a clean `.md` file directly into your Obsidian vault.
-
-No cloud storage. No accounts. No subscription. Everything stays on your machine.
+<div align="center">
+  <img src="screenshot.png" alt="Vaultdrop UI" width="100%" />
+  <br/><br/>
+  <h1>⬡ vaultdrop</h1>
+  <p><strong>The missing capture layer for your Obsidian second brain.</strong></p>
+  <p>Paste any YouTube, Instagram, Substack, or Reddit URL — get a structured markdown note in your Obsidian vault automatically.</p>
+  <br/>
+  <img src="https://img.shields.io/badge/local--first-yes-7c5cff?style=flat-square" />
+  <img src="https://img.shields.io/badge/free-forever-22c55e?style=flat-square" />
+  <img src="https://img.shields.io/badge/Indian%20languages-supported-f59e0b?style=flat-square" />
+  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" />
+</div>
 
 ---
 
-## what it does
+## The problem
 
-- **YouTube Shorts** — extracts captions, falls back to audio transcription
-- **Instagram Reels** — downloads audio, transcribes with Sarvam AI (supports Hindi, Hinglish, and all Indian languages)
-- **Substack articles** — scrapes and summarises full content
-- **Reddit threads** — pulls post + top comments via Reddit JSON API
-- **Any article** — generic scraper for blogs and web pages
-- **Manual paste** — fallback for anything that can't be extracted automatically
+Most knowledge systems fail at capture. You save a reel, a thread, an article — and it sits in your browser bookmarks, Instagram saved posts, or YouTube watch later. It never makes it into Obsidian. It never becomes a note you can think with.
 
-Every note is saved as structured markdown with frontmatter Obsidian understands:
+Capture friction kills PKM habits. If getting something into your vault takes more than 10 seconds, you stop doing it.
+
+Vaultdrop solves the capture layer for video and social content — the piece no other tool handles.
+
+---
+
+## What it does
+
+Paste a URL. Get a structured `.md` note in your Obsidian vault — with frontmatter, category, tags, TL;DR, key insights, and full notes. Automatically.
+
+| Platform | How it works |
+|---|---|
+| **YouTube Shorts** | Extracts captions → falls back to audio transcription |
+| **Instagram Reels** | Downloads audio → transcribes with Sarvam AI |
+| **Substack articles** | Scrapes full content → structures with Groq |
+| **Reddit threads** | Pulls post + top comments via JSON API |
+| **Any article** | Generic scraper for blogs and web pages |
+| **Manual paste** | Fallback for anything that can't be extracted |
+
+Every note lands in your `Inbox/` folder with this structure:
 
 ```markdown
 ---
 title: "Pigeons Diagnose Cancer"
 source: "https://youtube.com/shorts/..."
 platform: youtube
-saved: 2026-05-11
-tags: ["artificial intelligence", "cancer diagnosis", "pigeon study"]
+saved: 2026-05-13
+category: "[[Science & Nature]]"
+tags: ["cancer", "pigeons", "ai"]
 ---
 
+## TL;DR
+Pigeons were trained to diagnose breast cancer with 85% accuracy...
+
 ## Key Insights
-- Pigeons can be trained to diagnose breast cancer
+- Pigeons can be trained to diagnose breast cancer with high accuracy
 - Combining pigeon votes increases accuracy to 99%
+- This challenges the idea that humans are uniquely capable of certain tasks
 
-## Summary
-A study in 2015 trained pigeons to diagnose breast cancer from pathology slides...
-
-## Raw Notes
-...
+## Full Notes
+A 2015 study trained pigeons to identify breast cancer in pathology slides...
 ```
 
 ---
 
-## stack
+## Graph view — automatic clustering
 
-| Layer | Tool |
-|---|---|
-| Frontend | React + Vite |
-| Backend | Node.js + Express (local) |
-| Video extraction | yt-dlp |
-| Audio transcription | Sarvam AI `saaras:v3` |
-| Summarisation | Groq `llama-3.3-70b-versatile` |
-| Article scraping | Cheerio |
-| Output | Markdown → Obsidian vault |
+Every note links to a category index note via `[[wikilinks]]`. Save 10 recipe reels and they all cluster around a `Recipes & Food` node in your graph automatically.
+
+20 default categories including: Recipes & Food, Travel, Health & Fitness, Technology & AI, Career & MBA, Self-help & Mindset, and more. Add your own via `CUSTOM_CATEGORIES` in `.env`.
 
 ---
 
-## prerequisites
+## Two capture modes
 
-Install these before setup:
+| Mode | Best for | What it does |
+|---|---|---|
+| **Summarise** | Reels, Shorts, Reddit | Key insights + detailed notes |
+| **Full capture** | Articles, Substack, tutorials | Complete content preserved |
+
+Auto-detects the right mode. Override with the toggle anytime.
+
+---
+
+## Indian language support
+
+Vaultdrop uses [Sarvam AI](https://sarvam.ai) `saaras:v3` for audio transcription — built for Hindi, Hinglish, Tamil, Telugu, Kannada, and all Indian languages. A Hindi reel gets transcribed and translated to English automatically. No other PKM capture tool does this.
+
+---
+
+## How I use it
+
+I save around 20-30 pieces of content a week — reels, shorts, threads, articles. Most of it used to disappear into Instagram's saved folder or YouTube watch later, never to be found again.
+
+Now everything lands in my Obsidian Inbox as a structured note. I can search across what I've saved, see connections in graph view, and find that recipe or productivity tip when I actually need it.
+
+The next step I'm building toward: Claude Desktop connected to my vault via MCP. The goal is to ask Claude things like *"what have I saved about productivity this month"* or *"find everything I've captured about travel in Southeast Asia"* and get answers grounded in my actual notes — not hallucinated.
+
+Vaultdrop is the capture layer. Claude is the retrieval layer. The vault becomes a thinking partner instead of a graveyard.
+
+---
+
+## Why local-first
+
+- Your notes are yours — plain `.md` files, forever
+- Nothing stored on any server
+- Free — you bring your own Groq and Sarvam API keys (both have generous free tiers)
+- Works with Obsidian's full ecosystem — graph view, Dataview, Smart Connections, Claude MCP
+
+---
+
+## Prerequisites
+
+Install once:
 
 - [Node.js v18+](https://nodejs.org)
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) — add to PATH
-- [ffmpeg](https://ffmpeg.org) — add to PATH
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp) — `winget install yt-dlp` or `brew install yt-dlp`
+- [ffmpeg](https://ffmpeg.org) — `winget install ffmpeg` or `brew install ffmpeg`
 - [Obsidian](https://obsidian.md) — create a vault first
 
-Free API keys (no credit card needed):
-- [Groq](https://console.groq.com) — for summarisation
-- [Sarvam AI](https://dashboard.sarvam.ai) — for audio transcription
+Free API keys (no credit card):
+- [Groq](https://console.groq.com) — AI summarisation
+- [Sarvam AI](https://dashboard.sarvam.ai) — audio transcription
 
 ---
 
-## setup
+## Setup
 
-**1. Clone the repo**
 ```bash
 git clone https://github.com/dnyanadapathare/vaultdrop.git
 cd vaultdrop
+npm run setup
 ```
 
-**2. Install dependencies**
+The setup script checks prerequisites, collects your API keys, sets your vault path, and installs everything. Then:
+
 ```bash
-npm install
-cd server && npm install && cd ..
-cd client && npm install && cd ..
+npm run dev
 ```
 
-**3. Create your `.env` file in the root folder**
+Open `http://localhost:5173`.
+
+---
+
+## Manual setup
+
+Create a `.env` file in the root:
+
 ```
 GROQ_API_KEY=your_groq_key_here
 SARVAM_API_KEY=your_sarvam_key_here
@@ -95,108 +152,69 @@ VAULT_PATH=C:\Users\yourname\Documents\ObsidianVault\Inbox
 PORT=3001
 ```
 
-> On Mac/Linux: `VAULT_PATH=/Users/yourname/Documents/ObsidianVault/Inbox`
+> Mac/Linux: `VAULT_PATH=/Users/yourname/Documents/ObsidianVault/Inbox`
 
-**4. Create the Inbox folder in your vault**
-```bash
-mkdir "path/to/your/ObsidianVault/Inbox"
+Add custom categories:
 ```
-
-**5. Run**
-```bash
-npm run dev
-```
-
-Opens at `http://localhost:5173`
-
----
-
-## how it works
-
-```
-URL
- │
- ├── YouTube / Instagram
- │    └── yt-dlp → captions → description → audio → Sarvam transcription
- │
- ├── Substack / Reddit / Articles
- │    └── Express fetch → Cheerio parse
- │
- └── Manual paste (fallback)
-      │
-      └── Groq Llama 3.3 70B → structured JSON → markdown → Obsidian Inbox
+CUSTOM_CATEGORIES=Spirituality,Legal,Architecture
 ```
 
 ---
 
-## querying your notes
+## Querying your notes
 
-Since notes land in Obsidian with clean frontmatter, you can query them with:
-
-- **Obsidian search** (`Ctrl+Shift+F`) — search by keyword, tag, or platform
-- **Dataview plugin** — SQL-like queries across all notes
-- **Smart Connections plugin** — natural language semantic search
-- **Claude Desktop + MCP** — chat with your entire vault using Claude
-
-Example Dataview query:
+**Dataview plugin:**
 ```dataview
 TABLE title, platform, saved FROM "Inbox"
 WHERE contains(tags, "recipe")
 SORT saved DESC
 ```
 
+**Claude Desktop + MCP:** Connect Claude to your vault and ask *"summarise everything I've saved about productivity this month"*
+
+**Smart Connections plugin:** Semantic search across all notes in natural language.
+
 ---
 
-## project structure
+## Project structure
 
 ```
 vaultdrop/
-├── client/                  # React + Vite frontend
+├── client/               # React + Vite frontend
 │   └── src/
 │       ├── App.jsx
 │       └── App.css
-├── server/                  # Express backend
-│   ├── index.js             # routes + orchestration
-│   ├── groq.js              # Groq summarisation
-│   ├── sarvam.js            # Sarvam transcription + chunking
-│   ├── vault.js             # writes .md to Obsidian
+├── server/               # Express local server
+│   ├── index.js          # routes + orchestration
+│   ├── groq.js           # Groq summarisation
+│   ├── sarvam.js         # Sarvam transcription + chunking
+│   ├── vault.js          # writes .md to Obsidian
 │   └── extractors/
-│       ├── ytdlp.js         # YouTube + Instagram extraction
-│       └── scraper.js       # article scraping
-├── .env                     # your keys (never committed)
-└── package.json
+│       ├── ytdlp.js      # YouTube + Instagram
+│       └── scraper.js    # articles + Reddit
+├── scripts/
+│   └── setup.js          # interactive setup wizard
+└── .env                  # your keys (never committed)
 ```
 
 ---
 
-## why local-first
-
-Most content-saving tools store your data in their cloud. Vaultdrop runs entirely on your machine:
-
-- Your notes are yours — plain `.md` files, forever
-- Works offline after initial extraction
-- No monthly subscription
-- Obsidian's full graph view, backlinks, and plugins work on your notes
-- You query with your own Claude/AI setup
-
----
-
-## roadmap
+## Roadmap
 
 - [ ] Browser extension — vaultdrop any page in one click
 - [ ] Batch processing — paste multiple URLs at once
-- [ ] Tag editor — edit tags before saving
-- [ ] Claude MCP setup guide — query your vault with Claude Desktop
-- [ ] Windows auto-startup script
+- [ ] Claude MCP setup guide
+- [ ] Windows/Mac auto-startup
+- [ ] Obsidian plugin
 
 ---
 
-## built by
+## Built by
 
-[Dnyanada Pathare](https://github.com/dnyanadapathare) — product designer, Bangalore
+[Dnyanada Pathare](https://github.com/dnyanadapathare) — product designer, Bangalore.
 
 ---
 
-## license
+## License
 
 MIT — use it, fork it, build on it.

@@ -9,6 +9,8 @@
   <img src="https://img.shields.io/badge/free-forever-22c55e?style=flat-square" />
   <img src="https://img.shields.io/badge/Indian%20languages-supported-f59e0b?style=flat-square" />
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" />
+  <img src="https://img.shields.io/badge/Sarvam%20AI-saaras%3Av3-f59e0b?style=flat-square" />
+  <img src="https://img.shields.io/badge/Groq-Llama%203.3%2070B-7c5cff?style=flat-square" />
 </div>
 
 ---
